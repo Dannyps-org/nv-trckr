@@ -46,11 +46,7 @@ jobs:
           if [ ${{ needs.fetch-versions.outputs.file_version }} = ${{ needs.fetch-versions.outputs.backbone_helm_chart_version }} ] || [ ${{ needs.fetch-versions.outputs.pr_version }} = ${{ needs.fetch-versions.outputs.backbone_helm_chart_version }} ] ; then
             echo "RUN_JOBS=false" >> $GITHUB_OUTPUT
           else
-            if [ ${{ needs.fetch-versions.outputs.pr_version }} = ${{ needs.fetch-versions.outputs.backbone_helm_chart_version }} ]; then
-              echo "RUN_JOBS=false" >> $GITHUB_OUTPUT
-            else
-              echo "RUN_JOBS=true" >> $GITHUB_OUTPUT
-            fi
+            echo "RUN_JOBS=true" >> $GITHUB_OUTPUT
           fi
 
   create-pr:
