@@ -31,7 +31,7 @@ jobs:
         run: echo "CHART_VERSION=$(cat chart-version.txt)" >> $GITHUB_OUTPUT
 
       - name: print values
-        run: echo ${{ steps.files.outputs.CHART_VERSION }}
+        run: echo ${{ steps.latest-version.outputs.VERSION }}
        
         # with:
         #   workflow: Check-for-Repo-B-Release
