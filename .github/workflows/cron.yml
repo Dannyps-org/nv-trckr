@@ -1,8 +1,8 @@
 name: Check for New Release enmeshed-backbone
 
-on:
-  schedule:
-    - cron: "*/3 * * * *"
+on: push
+  # schedule:
+  #   - cron: "*/3 * * * *"
 
 jobs:
   check_for_release:
