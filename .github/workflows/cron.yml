@@ -78,8 +78,9 @@ jobs:
 
       - name: Create a new branch
         run: |
-          git checkout -b upgrade-chart-version main
-          git push --set-upstream origin upgrade-chart-version
+          BRANCH_NAME=upgrade-chart-${{ needs.fetch-versions.outputs.backbone_helm_chart_version }}
+          git checkout -b $BRANCH_NAME main
+          git push --set-upstream origin $BRANCH_NAME
 
       - name: Update chart version
         run: |
