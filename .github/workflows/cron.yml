@@ -2,7 +2,7 @@ name: Check for New Release enmeshed-backbone
 
 on:
   schedule:
-    - cron: "0/3 * * * *"
+    - cron: "*/3 * * * *"
 
 jobs:
   check_for_release:
