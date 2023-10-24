@@ -1,6 +1,7 @@
 name: Check for New Release enmeshed-backbone
 
-on: push
+on:
+  push
   # schedule:
   #   - cron: "*/3 * * * *"
 
@@ -10,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       file_version: ${{ steps.files.outputs.CHART_VERSION }}
-      PR_version: ${{ steps.pr.outputs.PR_VERSION }}
+      pr_version: ${{ steps.pr.outputs.PR_VERSION }}
       backbone_helm_chart_version: ${{ steps.latest-version.outputs.VERSION }}
     steps:
       - name: Check latest helm version
@@ -18,16 +19,6 @@ jobs:
         run: >
           echo "VERSION=$(gh api -H \"Accept: application/vnd.github+json\" -H \"X-GitHub-Api-Version: 2022-11-28\" https://api.github.com/repos/nmshd/backbone/releases | jq 'first(.[] | select(.tag_name | startswith("helm/"))).tag_name')" >> $GITHUB_OUTPUT
 
-      - name: test
-        run: echo $GITHUB_REPOSITORY && echo $CI
-
-      - name: Check latest PR version
-        id: pr
-        run: >
-          gh api -H \"Accept: application/vnd.github+json\" -H \"X-GitHub-Api-Version: 2022-11-28\" https://api.github.com/repos/$GITHUB_REPOSITORY/pulls | jq "first(.[] | select(.user.login=="nmshd").title" | grep -oEh "v[0-9]+.[0-9]+.[0-9]+$" > pr_version || echo "" > pr_version
-          && echo "VERSION=$(cat pr_version)" >> $GITHUB_OUTPUT
-          && rm pr_version
-     
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -35,9 +26,40 @@ jobs:
         id: files
         run: echo "CHART_VERSION=$(cat chart-version.txt)" >> $GITHUB_OUTPUT
 
-      - name: print values
-        run: echo ${{ steps.latest-version.outputs.VERSION }}
-       
+      - name: Check latest PR version
+        id: pr
+        run: >
+          gh api -H \"Accept: application/vnd.github+json\" -H \"X-GitHub-Api-Version: 2022-11-28\" https://api.github.com/repos/$GITHUB_REPOSITORY/pulls | jq "first(.[] | select(.user.login=="nmshd").title" | grep -oEh "v[0-9]+.[0-9]+.[0-9]+$" > pr_version || echo "" > pr_version
+          && echo "VERSION=$(cat pr_version)" >> $GITHUB_OUTPUT
+          && rm pr_version
+
         # with:
         #   workflow: Check-for-Repo-B-Release
         #   token: ${{ secrets.REPO_A_TOKEN }}
+
+  check-pr:
+    name: Determine if PR is to be created
+    runs-on: ubuntu-latest
+    outputs:
+      run_rest_jobs: ${{ steps.set_output.outputs.run_jobs }}
+    steps:
+      - name: Check if chart-version and current helm chart version match
+        id: set_output
+        run: |
+          if [[${{ jobs.fetch_versions.outputs.file_version }} == ${{ jobs.fetch_versions.outputs.backbone_helm_chart_version }}]]; then
+            echo "::set-output name=run_jobs::false"
+          else
+            if [[${{ jobs.fetch_versions.outputs.pr_version }} == ${{ jobs.fetch_versions.outputs.backbone_helm_chart_version }}]]; then
+              echo "::set-output name=run_jobs::false"
+            else
+              echo "::set-output name=run_jobs::true"
+            fi
+          fi
+
+  create-pr:
+    name: Create PR
+    if: .outputs.run_rest_jobs == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create PR mock
+        run: echo "Create PR"
