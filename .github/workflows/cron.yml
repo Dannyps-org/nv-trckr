@@ -71,6 +71,13 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
+      - name: Install hub
+        run: |
+          wget https://github.com/github/hub/releases/download/v2.14.2/hub-linux-amd64-2.14.2.tgz
+          tar -xvf hub-linux-amd64-2.14.2.tgz
+          sudo cp hub-linux-amd64-2.14.2/bin/hub /usr/local/bin/hub
+        shell: bash
+        
       - name: Set up Git
         run: |
           git config --global user.email "actions@github.com"
