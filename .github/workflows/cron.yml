@@ -5,84 +5,23 @@ on:
     - cron: "*/30 * * * *"
 
 jobs:
-  fetch-versions:
-    name: Fetch Helm versions
+  main:
+    name: Create feature branch and Pull Request if new helm version is available
     runs-on: ubuntu-latest
-    outputs:
-      file_version: ${{ steps.files.outputs.CHART_VERSION }}
-      pr_version: ${{ steps.pr.outputs.VERSION }}
-      backbone_helm_chart_version: ${{ steps.latest-version.outputs.VERSION }}
     steps:
-      - name: Check latest helm version
-        id: latest-version
-        run: >
-          echo "VERSION=$(curl -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' https://api.github.com/repos/nmshd/backbone/releases | jq 'first(.[] | select(.tag_name | startswith("helm/"))).tag_name' | tr -d \" | grep -oEh "v[0-9]+.[0-9]+.[0-9]+$")" >> $GITHUB_OUTPUT
-
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Read content of chart-version.txt
-        id: files
-        run: echo "CHART_VERSION=$(cat chart-version.txt)" >> $GITHUB_OUTPUT
-
-      - name: Check latest PR version
-        id: pr
-        run: |
-          curl -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' https://api.github.com/repos/$GITHUB_REPOSITORY/pulls | jq 'first(.[] | select(.user.login=="github-actions[bot]")).title' | tr -d \" |grep -oEh "v[0-9]+.[0-9]+.[0-9]+$" > pr_version || echo "no-pr" > pr_version
-          echo "VERSION=$(cat pr_version)" >> $GITHUB_OUTPUT
-          rm pr_version
-
-  check-pr:
-    needs: fetch-versions
-    name: Determine if PR is to be created
-    runs-on: ubuntu-latest
-    outputs:
-      run_rest_jobs: ${{ steps.set_output.outputs.run_jobs }}
-    steps:
-      - name: Check if chart-version and current helm chart version match
-        id: set_output
-        run: |
-          if [ ${{ needs.fetch-versions.outputs.file_version }} = ${{ needs.fetch-versions.outputs.backbone_helm_chart_version }} ] || [ ${{ needs.fetch-versions.outputs.pr_version }} = ${{ needs.fetch-versions.outputs.backbone_helm_chart_version }} ] ; then
-            echo "RUN_JOBS=false" >> $GITHUB_OUTPUT
-          else
-            echo "RUN_JOBS=true" >> $GITHUB_OUTPUT
-          fi
-
-  create-pr:
-    needs: [fetch-versions, check-pr]
-    name: Create feature branch and Pull Request
-    if: needs.check-pr.outputs.run_rest_jobs == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - name: Install script dependencies
+        run: npm install --prefix ./.ci
 
       - name: Set up Git
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
 
-      - name: Create a new branch
-        id: create
-        run: |
-          branch_name=upgrade-chart-${{ needs.fetch-versions.outputs.backbone_helm_chart_version }}
-          echo "BRANCH_NAME=$branch_name" >> $GITHUB_OUTPUT
-          git checkout -b $branch_name main
-          git push --set-upstream origin $branch_name
-
-      - name: Update chart version
-        run: |
-          version="${{ needs.fetch-versions.outputs.backbone_helm_chart_version }}"
-          echo "Updating chart-version.txt to $version"
-          echo "$version" > chart-version.txt
-          git add chart-version.txt
-          git commit -m "Update chart version to $version"
-          git push
-
-      - name: Create a PR
-        run: |
-          version="${{ needs.fetch-versions.outputs.backbone_helm_chart_version }}"
-          gh pr create -B main -H ${{ steps.create.outputs.BRANCH_NAME }} --title "Bump helm chart version to $version" --body 'Created by Github action'
+      - name: Main
+        run: ./.ci/main.ts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
