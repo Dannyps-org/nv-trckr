@@ -79,7 +79,7 @@ jobs:
       - name: Create a new branch
         run: |
           git checkout -b upgrade-chart-version main
-          git push origin upgrade-chart-version
+          git push --set-upstream origin upgrade-chart-version
 
       - name: Update chart version
         run: |
