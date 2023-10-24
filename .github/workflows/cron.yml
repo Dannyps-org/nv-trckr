@@ -70,13 +70,6 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-
-      - name: Install hub
-        run: |
-          wget https://github.com/github/hub/releases/download/v2.14.2/hub-linux-amd64-2.14.2.tgz
-          tar -xvf hub-linux-amd64-2.14.2.tgz
-          sudo cp hub-linux-amd64-2.14.2/bin/hub /usr/local/bin/hub
-        shell: bash
         
       - name: Set up Git
         run: |
@@ -84,10 +77,12 @@ jobs:
           git config --global user.name "GitHub Actions"
 
       - name: Create a new branch
+        id: create
         run: |
           BRANCH_NAME=upgrade-chart-${{ needs.fetch-versions.outputs.backbone_helm_chart_version }}
           git checkout -b $BRANCH_NAME main
           git push --set-upstream origin $BRANCH_NAME
+          echo "BRANCH_NAME=$BRANCH_NAME" >> GITHUB_OUTPUT
 
       - name: Update chart version
         run: |
@@ -101,6 +96,9 @@ jobs:
       - name: Create a PR
         run: |
           version="${{ needs.fetch-versions.outputs.backbone_helm_chart_version }}"
-          hub pull-request -m "Bump chart version to $version" -b main -h feature-branch
+          branch_name="${{ steps.create.outputs.BRANCH_NAME }}"
+          gh pr create -B base_branch -H $branch_name --title 'Bump helm chart version to $version' --body 'Created by Github action'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
