@@ -38,6 +38,7 @@ jobs:
         #   token: ${{ secrets.REPO_A_TOKEN }}
 
   check-pr:
+    needs: fetch-versions
     name: Determine if PR is to be created
     runs-on: ubuntu-latest
     outputs:
