@@ -15,13 +15,14 @@ jobs:
           echo "VERSION=(gh api -H \"Accept: application/vnd.github+json\" -H \"X-GitHub-Api-Version: 2022-11-28\" https://api.github.com/repos/nmshd/backbone/releases | jq 'first(.[] | select(.tag_name | startswith("helm/"))).tag_name')" >> $GITHUB_OUTPUT
      
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Read content of chart-version.txt
         id: files
         run: echo "CHART_VERSION=$(cat chart-version.txt)" >> $GITHUB_OUTPUT
 
-
+      - name: print values
+        run: echo ${{ steps.files.outputs.CHART_VERSION }}
        
         # with:
         #   workflow: Check-for-Repo-B-Release
