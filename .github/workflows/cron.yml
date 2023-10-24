@@ -79,10 +79,10 @@ jobs:
       - name: Create a new branch
         id: create
         run: |
-          BRANCH_NAME=upgrade-chart-${{ needs.fetch-versions.outputs.backbone_helm_chart_version }}
-          git checkout -b $BRANCH_NAME main
-          git push --set-upstream origin $BRANCH_NAME
-          echo "BRANCH_NAME=$BRANCH_NAME" >> GITHUB_OUTPUT
+          echo "BRANCH_NAME=upgrade-chart-${{ needs.fetch-versions.outputs.backbone_helm_chart_version }}" >> GITHUB_OUTPUT
+          echo ${{ steps.create.outputs.BRANCH_NAME }}
+          git checkout -b ${{ steps.create.outputs.BRANCH_NAME }} main
+          git push --set-upstream origin ${{ steps.create.outputs.BRANCH_NAME }}
 
       - name: Update chart version
         run: |
@@ -96,10 +96,7 @@ jobs:
       - name: Create a PR
         run: |
           version="${{ needs.fetch-versions.outputs.backbone_helm_chart_version }}"
-          branch_name="${{ steps.create.outputs.BRANCH_NAME }}"
-          echo $branch_name
-          echo "pr create -B main -H $branch_name --title"
-          
+          gh pr create -B main -H ${{ steps.create.outputs.BRANCH_NAME }} --title "Bump helm chart version to $version" --body 'Created by Github action'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
