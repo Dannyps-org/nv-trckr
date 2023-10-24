@@ -70,10 +70,10 @@ jobs:
       - name: Create a new branch
         id: create
         run: |
-          echo "BRANCH_NAME=upgrade-chart-${{ needs.fetch-versions.outputs.backbone_helm_chart_version }}" >> $GITHUB_OUTPUT
-          echo ${{ steps.create.outputs.BRANCH_NAME }}
-          git checkout -b ${{ steps.create.outputs.BRANCH_NAME }} main
-          git push --set-upstream origin ${{ steps.create.outputs.BRANCH_NAME }}
+          branch_name=upgrade-chart-${{ needs.fetch-versions.outputs.backbone_helm_chart_version }}
+          echo "BRANCH_NAME=$branch_name" >> $GITHUB_OUTPUT
+          git checkout -b $branch_name main
+          git push --set-upstream origin $branch_name
 
       - name: Update chart version
         run: |
