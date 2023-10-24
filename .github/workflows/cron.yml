@@ -97,6 +97,8 @@ jobs:
         run: |
           version="${{ needs.fetch-versions.outputs.backbone_helm_chart_version }}"
           branch_name="${{ steps.create.outputs.BRANCH_NAME }}"
+          echo $branch_name
+          echo "pr create -B main -H $branch_name --title"
           gh pr create -B main -H $branch_name --title "Bump helm chart version to $version" --body 'Created by Github action'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
