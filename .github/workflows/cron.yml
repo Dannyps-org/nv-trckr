@@ -58,6 +58,7 @@ jobs:
           fi
 
   create-pr:
+    needs: [fetch-versions, check-pr]
     name: Create PR
     if: .outputs.run_rest_jobs == 'true'
     runs-on: ubuntu-latest
