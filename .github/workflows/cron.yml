@@ -47,10 +47,10 @@ jobs:
       - name: Check if chart-version and current helm chart version match
         id: set_output
         run: |
-          if [[${{ jobs.fetch_versions.outputs.file_version }} == ${{ jobs.fetch_versions.outputs.backbone_helm_chart_version }}]]; then
+          if [[${{ jobs.fetch-versions.outputs.file_version }} == ${{ jobs.fetch-versions.outputs.backbone_helm_chart_version }}]]; then
             echo "::set-output name=run_jobs::false"
           else
-            if [[${{ jobs.fetch_versions.outputs.pr_version }} == ${{ jobs.fetch_versions.outputs.backbone_helm_chart_version }}]]; then
+            if [[${{ jobs.fetch-versions.outputs.pr_version }} == ${{ jobs.fetch-versions.outputs.backbone_helm_chart_version }}]]; then
               echo "::set-output name=run_jobs::false"
             else
               echo "::set-output name=run_jobs::true"
