@@ -15,7 +15,6 @@ async function createPr(title: string, body: string, base: string, compare: stri
 async function getVersionFromPullRequestsByLogin(loginName: string): Promise<string> {
     let [owner, repo] = GITHUB_REPOSITORY.split('/');
     let pulls = await octokit.rest.pulls.list({ owner, repo, state: "open" });
-    console.log(pulls.data.length)
     let relevantPulls = pulls.data.filter(p => p.user?.login == loginName && p.title.match("v[0-9]+.[0-9]+.[0-9]+$") != null);
     if (relevantPulls.length > 0) {
         let matches = relevantPulls[0].title.match("v[0-9]+.[0-9]+.[0-9]+$");
@@ -27,7 +26,7 @@ async function getVersionFromPullRequestsByLogin(loginName: string): Promise<str
 
 async function getVersionFromEnmeshedBackboneRepositoryHelmChart(): Promise<string> {
     let releases = await octokit.rest.repos.listReleases({ owner: "nmshd", repo: "backbone" });
-    console.log(releases.data.length)
+    console.log(releases.data[0])
     let relevantReleases = releases.data.filter(p => p.tag_name?.startsWith("helm/"));
     if (relevantReleases.length > 0) {
         return relevantReleases[0].name?.split('helm')[1] ?? 'no-release';
@@ -45,4 +44,3 @@ let pullRequestVersion = await getVersionFromPullRequestsByLogin("github-actions
 let backboneHelmChartVersion = await getVersionFromEnmeshedBackboneRepositoryHelmChart()
 
 console.warn(`file: ${chartVersionFileContent}, pr: ${pullRequestVersion}, backbone: ${backboneHelmChartVersion}`);
-console.error(`file: ${chartVersionFileContent}, pr: ${pullRequestVersion}, backbone: ${backboneHelmChartVersion}`);
