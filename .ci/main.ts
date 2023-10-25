@@ -13,22 +13,33 @@ async function main() {
     let pullRequestVersion = await getVersionFromPullRequestsByLogin(octokit, GITHUB_REPOSITORY, "github-actions[bot]");
     let backboneHelmChartVersion = await getVersionFromEnmeshedBackboneRepositoryHelmChart(octokit);
 
-    if (backboneHelmChartVersion !== chartVersionFileContent || backboneHelmChartVersion !== pullRequestVersion) {
+    if (backboneHelmChartVersion !== chartVersionFileContent && backboneHelmChartVersion !== pullRequestVersion) {
         // a new version is available and there is no PR for it, neither have we updated to it yet.
 
         await deletePRsTargetingMain();
         let featureBranchName = `upgrade-helm/${backboneHelmChartVersion}`;
         await createFeatureBranch(featureBranchName, backboneHelmChartVersion);
-        await createPr(`Bump helm-chart version to ${backboneHelmChartVersion}`, "Created by bot", "main", featureBranchName);
+        await createPr(octokit, GITHUB_REPOSITORY, `Bump helm-chart version to ${backboneHelmChartVersion}`, "Created by bot", "main", featureBranchName);
+    } else {
+        console.log("nothing to do.");
     }
 }
 
 /**
- * Creates a PR from {@link compare} to {@link base}.
+ * Creates a PR from {@link head} to {@link base}.
  * @returns the created PR Number
  */
-async function createPr(title: string, body: string, base: string, compare: string): Promise<Number> {
-    return 1;
+async function createPr(
+    octokit: Octokit,
+    GITHUB_REPOSITORY: string,
+    title: string,
+    body: string,
+    base: string,
+    head: string
+): Promise<Number> {
+    let [owner, repo] = GITHUB_REPOSITORY.split('/');
+    var pr = await octokit.pulls.create({owner, repo, head, base, title, body});
+    return pr.data.id;
 }
 
 /**
