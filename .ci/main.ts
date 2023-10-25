@@ -91,7 +91,7 @@ async function createFeatureBranch(featureBranchName: string, backboneHelmChartV
     await $`git checkout -b ${featureBranchName} main`;
     await $`echo ${backboneHelmChartVersion} > chart-version.txt`;
     await $`git add chart-version.txt`;
-    await $`git commit -m "Update chart version to $version"`;
+    await $`git commit -m "Update chart version to ${backboneHelmChartVersion}"`;
     await $`git push --set-upstream origin ${featureBranchName}`;
 }
 
