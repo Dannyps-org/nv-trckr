@@ -1,13 +1,14 @@
 #!/usr/bin/env -S npx ts-node --esm
 
-import { $ } from "zx";
 import { Octokit } from "@octokit/rest";
+import { $ } from "zx";
 import { getRequiredEnvVar } from "./lib.js";
 
 async function main() {
     const GITHUB_TOKEN = getRequiredEnvVar("GITHUB_TOKEN");
     const GITHUB_REPOSITORY = getRequiredEnvVar("GITHUB_REPOSITORY");
-    const octokit = new Octokit({auth: GITHUB_TOKEN});
+    const octokit = new Octokit({ auth: GITHUB_TOKEN });
+    const featureBranchPrefix = "upgrade-helm";
 
     var chartVersionFileContent = (await $`cat chart-version.txt`).toString().trim();
     let pullRequestVersion = await getVersionFromPullRequestsByLogin(octokit, GITHUB_REPOSITORY, "github-actions[bot]");
@@ -16,8 +17,8 @@ async function main() {
     if (backboneHelmChartVersion !== chartVersionFileContent && backboneHelmChartVersion !== pullRequestVersion) {
         // a new version is available and there is no PR for it, neither have we updated to it yet.
 
-        await deletePRsTargetingMain();
-        let featureBranchName = `upgrade-helm/${backboneHelmChartVersion}`;
+        await deleteUpgradeHelmBranches(octokit, GITHUB_REPOSITORY, featureBranchPrefix);
+        let featureBranchName = `${featureBranchPrefix}/${backboneHelmChartVersion}`;
         await createFeatureBranch(featureBranchName, backboneHelmChartVersion);
         await createPr(octokit, GITHUB_REPOSITORY, `Bump helm-chart version to ${backboneHelmChartVersion}`, "Created by bot", "main", featureBranchName);
     } else {
@@ -38,7 +39,7 @@ async function createPr(
     head: string
 ): Promise<Number> {
     let [owner, repo] = GITHUB_REPOSITORY.split('/');
-    var pr = await octokit.pulls.create({owner, repo, head, base, title, body});
+    var pr = await octokit.pulls.create({ owner, repo, head, base, title, body });
     return pr.data.id;
 }
 
@@ -80,9 +81,18 @@ async function getVersionFromEnmeshedBackboneRepositoryHelmChart(octokit: Octoki
 
 await main();
 
-async function deletePRsTargetingMain(): Promise<number> {
-    // to do
-    return 0;
+/**
+ * also deletes related PRs
+ * @returns the number of deleted entities
+ */
+async function deleteUpgradeHelmBranches(octokit: Octokit, GITHUB_REPOSITORY: string, featureBranchPrefix: string): Promise<number> {
+    let [owner, repo] = GITHUB_REPOSITORY.split('/');
+    let branches = await octokit.repos.listBranches({ owner, repo, per_page: 100 });
+    let featureBranches = branches.data.filter(b => b.name.startsWith(featureBranchPrefix));
+    featureBranches.forEach(async branch => {
+        await octokit.git.deleteRef({owner, repo, ref:`heads/${branch.name}`})
+    });
+    return featureBranches.length;
 }
 
 async function createFeatureBranch(featureBranchName: string, backboneHelmChartVersion: string): Promise<void> {
