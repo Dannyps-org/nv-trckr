@@ -1,4 +1,4 @@
-name: Check for New Release enmeshed-backbone
+name: Tag main as dev
 
 on:
   push:

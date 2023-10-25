@@ -1,8 +1,11 @@
-name: Check for New Release enmeshed-backbone
+name: Version each tag when created
 
 on:
   push:
-    tags: [dev, stage, prod, bird]
+    branches:
+      - main
+  # push:
+  #   tags: [dev, stage, prod, bird]
 
 jobs:
   main:
