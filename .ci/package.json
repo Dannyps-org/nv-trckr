@@ -1,6 +1,13 @@
 {
     "type": "module",
     "devDependencies": {
+        "@babel/eslint-parser": "^7.22.15",
+        "@typescript-eslint/eslint-plugin": "^6.9.0",
+        "eslint": "^8.52.0",
+        "eslint-config-standard-with-typescript": "^39.1.1",
+        "eslint-plugin-import": "^2.29.0",
+        "eslint-plugin-n": "^16.2.0",
+        "eslint-plugin-promise": "^6.1.1",
         "ts-node": "^10.9.1",
         "typescript": "^4.9.5",
         "zx": "^7.2.0"
