@@ -12,7 +12,7 @@ async function main() {
 
     var chartVersionFileContent = (await $`cat chart-version.txt`).toString().trim();
     let pullRequestVersion = await getVersionFromPullRequestsByLogin(octokit, GITHUB_REPOSITORY, "github-actions[bot]");
-    let backboneHelmChartVersion = await getVersionFromEnmeshedBackboneRepositoryHelmChart(octokit);
+    let backboneHelmChartVersion = "v3.4.0";//await getVersionFromEnmeshedBackboneRepositoryHelmChart(octokit);
 
     if (backboneHelmChartVersion !== chartVersionFileContent && backboneHelmChartVersion !== pullRequestVersion) {
         // a new version is available and there is no PR for it, neither have we updated to it yet.
