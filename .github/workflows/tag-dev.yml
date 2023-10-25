@@ -24,4 +24,4 @@ jobs:
       - name: Tas as Dev
         run: |
           git tag -a dev -m "auto-tag dev"
-          git push
+          git push origin dev
