@@ -2,7 +2,7 @@
 
 import { $ } from "zx";
 import { Octokit } from "@octokit/rest";
-import { getRequiredEnvVar } from "./lib";
+import { getRequiredEnvVar } from "./lib.js";
 
 /**
  * Creates a PR from {@link compare} to {@link base}.
