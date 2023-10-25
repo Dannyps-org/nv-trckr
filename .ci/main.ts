@@ -28,7 +28,7 @@ async function getVersionFromPullRequestsByLogin(loginName: string): Promise<str
 async function getVersionFromEnmeshedBackboneRepositoryHelmChart(): Promise<string> {
     let releases = await octokit.rest.repos.listReleases({ owner: "nmshd", repo: "backbone" });
     console.log(releases.data.length)
-    let relevantReleases = releases.data.filter(p => p.name?.startsWith("helm/"));
+    let relevantReleases = releases.data.filter(p => p.tag_name?.startsWith("helm/"));
     if (relevantReleases.length > 0) {
         return relevantReleases[0].name?.split('helm')[1] ?? 'no-release';
     } else {
