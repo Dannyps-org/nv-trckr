@@ -10,7 +10,7 @@ async function main(): Promise<void> {
   const octokit = new Octokit({ auth: GITHUB_TOKEN });
   const featureBranchPrefix = 'upgrade-helm';
 
-  const chartVersionFileContent = fs.readFileSync('chart-version.txt').toString();
+  const chartVersionFileContent = fs.readFileSync('chart-version.txt').toString().trim();
   const pullRequestVersion = await getVersionFromPullRequestsByLogin(octokit, GITHUB_REPOSITORY, 'github-actions[bot]');
   const backboneHelmChartVersion = await getVersionFromEnmeshedBackboneRepositoryHelmChart(octokit);
 
