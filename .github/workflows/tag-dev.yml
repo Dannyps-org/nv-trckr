@@ -1,0 +1,27 @@
+name: Check for New Release enmeshed-backbone
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  main:
+    name: Tag as dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install script dependencies
+        run: npm install --prefix ./.ci
+
+      - name: Set up Git
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+      - name: Tas as Dev
+        run: |
+          git tag -a dev -m "auto-tag dev"
+          git push
