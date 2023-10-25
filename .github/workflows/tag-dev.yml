@@ -20,6 +20,5 @@ jobs:
 
       - name: Tas as Dev
         run: |
-          git fetch --tags
           git tag -a dev -m "auto-tag dev"
-          git push origin dev
+          git push origin dev --force
