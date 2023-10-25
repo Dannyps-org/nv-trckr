@@ -7,7 +7,7 @@ import { getRequiredEnvVar } from "./lib.js";
 async function main() {
     const GITHUB_TOKEN = getRequiredEnvVar("GITHUB_TOKEN");
     const GITHUB_REPOSITORY = getRequiredEnvVar("GITHUB_REPOSITORY");
-    const octokit = new Octokit();
+    const octokit = new Octokit({auth: GITHUB_TOKEN});
 
     var chartVersionFileContent = (await $`cat chart-version.txt`).toString().trim();
     let pullRequestVersion = await getVersionFromPullRequestsByLogin(octokit, GITHUB_REPOSITORY, "github-actions[bot]");
