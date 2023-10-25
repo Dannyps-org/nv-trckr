@@ -2,4 +2,5 @@
 
 import { $ } from 'zx';
 
+await $`git fetch --tags`;
 await $`git tag -l`;
