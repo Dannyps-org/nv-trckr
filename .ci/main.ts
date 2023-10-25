@@ -29,7 +29,7 @@ async function getVersionFromEnmeshedBackboneRepositoryHelmChart(): Promise<stri
     console.log(releases.data[0])
     let relevantReleases = releases.data.filter(p => p.tag_name?.startsWith("helm/"));
     if (relevantReleases.length > 0) {
-        return relevantReleases[0].name?.split('helm')[1] ?? 'no-release';
+        return relevantReleases[0].tag_name?.split('helm')[1] ?? 'no-release';
     } else {
         return 'no-release';
     }
