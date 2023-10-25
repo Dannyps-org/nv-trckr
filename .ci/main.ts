@@ -41,4 +41,5 @@ var chartVersionFileContent = await $`cat chart-version.txt`;
 let pullRequestVersion = await getVersionFromPullRequestsByLogin("github-actions[bot]");
 let backboneHelmChartVersion = await getVersionFromEnmeshedBackboneRepositoryHelmChart()
 
-console.log(chartVersionFileContent, pullRequestVersion, backboneHelmChartVersion);
+console.warn(chartVersionFileContent, pullRequestVersion, backboneHelmChartVersion);
+console.error(chartVersionFileContent, pullRequestVersion, backboneHelmChartVersion);
