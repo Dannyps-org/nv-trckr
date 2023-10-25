@@ -88,8 +88,10 @@ async function deletePRsTargetingMain(): Promise<number> {
 async function createFeatureBranch(featureBranchName: string, backboneHelmChartVersion: string): Promise<void> {
     await $`git config --global user.email "actions@github.com"`;
     await $`git config --global user.name "GitHub Actions"`;
-    await $`echo ${backboneHelmChartVersion} > chart-version.txt`;
     await $`git checkout -b ${featureBranchName} main`;
+    await $`echo ${backboneHelmChartVersion} > chart-version.txt`;
+    await $`git add chart-version.txt`;
+    await $`git commit -m "Update chart version to $version"`;
     await $`git push --set-upstream origin ${featureBranchName}`;
 }
 
