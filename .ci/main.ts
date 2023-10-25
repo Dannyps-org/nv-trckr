@@ -1,7 +1,7 @@
 #!/usr/bin/env -S npx ts-node --esm
 
 import { Octokit } from '@octokit/rest';
-import { $ } from 'zx';
+import { $, fs } from 'zx';
 import { getRequiredEnvVar } from './lib.js';
 
 async function main(): Promise<void> {
@@ -10,7 +10,7 @@ async function main(): Promise<void> {
   const octokit = new Octokit({ auth: GITHUB_TOKEN });
   const featureBranchPrefix = 'upgrade-helm';
 
-  const chartVersionFileContent = (await $`cat chart-version.txt`).toString().trim();
+  const chartVersionFileContent = fs.readFileSync('chart-version.txt').toString();
   const pullRequestVersion = await getVersionFromPullRequestsByLogin(octokit, GITHUB_REPOSITORY, 'github-actions[bot]');
   const backboneHelmChartVersion = await getVersionFromEnmeshedBackboneRepositoryHelmChart(octokit);
 
