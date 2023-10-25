@@ -18,7 +18,8 @@ async function getVersionFromPullRequestsByLogin(loginName: string): Promise<str
     console.log(pulls.data.length)
     let relevantPulls = pulls.data.filter(p => p.user?.login == loginName && p.title.match("v[0-9]+.[0-9]+.[0-9]+$") != null);
     if (relevantPulls.length > 0) {
-        return `v${relevantPulls[0].title.split(' v')[1]}`;
+        let matches = relevantPulls[0].title.match("v[0-9]+.[0-9]+.[0-9]+$");
+        return matches?.[0] ?? 'no-pr';
     } else {
         return 'no-pr';
     }
@@ -39,7 +40,7 @@ const GITHUB_TOKEN = getRequiredEnvVar("GITHUB_TOKEN");
 const GITHUB_REPOSITORY = getRequiredEnvVar("GITHUB_REPOSITORY");
 const octokit = new Octokit();
 
-var chartVersionFileContent = await $`cat chart-version.txt`;
+var chartVersionFileContent = (await $`cat chart-version.txt`).toString().trim();
 let pullRequestVersion = await getVersionFromPullRequestsByLogin("github-actions[bot]");
 let backboneHelmChartVersion = await getVersionFromEnmeshedBackboneRepositoryHelmChart()
 
