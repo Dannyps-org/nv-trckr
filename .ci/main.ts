@@ -14,6 +14,7 @@ async function main(): Promise<void> {
   const pullRequestVersion = await getVersionFromPullRequestsByLogin(octokit, GITHUB_REPOSITORY, 'github-actions[bot]');
   const backboneHelmChartVersion = await getVersionFromEnmeshedBackboneRepositoryHelmChart(octokit);
 
+  console.log(chartVersionFileContent, pullRequestVersion, backboneHelmChartVersion);
   if (backboneHelmChartVersion !== chartVersionFileContent && backboneHelmChartVersion !== pullRequestVersion) {
     await deleteUpgradeHelmBranches(octokit, GITHUB_REPOSITORY, featureBranchPrefix);
 
