@@ -1,7 +1,7 @@
 #!/usr/bin/env -S npx ts-node --esm
 
 import { $ } from 'zx';
-import { getRequiredEnvVar } from './lib';
+import { getRequiredEnvVar } from './lib.js';
 
 await $`git fetch --tags`;
 let existingTags = (await $`git tag -l`).toString().split("\n");
