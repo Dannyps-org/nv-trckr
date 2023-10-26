@@ -6,11 +6,17 @@ import { getRequiredEnvVar } from "./lib.js";
 await $`git fetch --tags`;
 let existingTags = (await $`git tag -l`).toString().split("\n").slice(0, -1);
 
-let tag = "dev"; //getRequiredEnvVar("GIT_TAG");
+const inputTag = getRequiredEnvVar("GIT_TAG");
+const nextTagVersion = getNextTagVersion(existingTags, inputTag);
 
-console.log(`triggerer: ${tag}`);
-console.log(`existing tags: ${existingTags}`);
-console.log(`next tag: ${getNextTagVersion(existingTags, tag)}`);
+if(['dev', 'stage', 'prod', 'bird'].includes(inputTag)===false){
+    // this is not something that we want to tag
+    console.error(`Will not tag ${inputTag}.`);
+    process.exit(-1); 
+}
+
+await $`git tag -a ${nextTagVersion}`;
+await $`git push origin ${nextTagVersion} --force`;
 
 /**
  * Given a list of existing tags of the form `name-version` (e.g. `dev-2`, `stage-4`), and a tag name such as `dev`,
@@ -20,7 +26,7 @@ function getNextTagVersion(existingTags: string[], tag: string): string {
   // Find all tags with the specified name and extract their version numbers
   const matchingTags = existingTags
     .filter((existingTag) => existingTag.startsWith(tag + "-"))
-    .map((existingTag) => parseInt(existingTag.split("-")[1], 10))
+    .map((existingTag) => parseInt(existingTag.split("-")[1]))
     .filter((versionNumber) => !isNaN(versionNumber));
 
   // Determine the next version number
