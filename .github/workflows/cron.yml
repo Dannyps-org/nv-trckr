@@ -1,9 +1,8 @@
 name: Check for New Release enmeshed-backbone
 
 on:
-  push
-  # schedule:
-  #   - cron: "*/30 * * * *"
+  schedule:
+    - cron: "15 * * * *"
 
 jobs:
   main:
