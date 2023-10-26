@@ -9,7 +9,7 @@ let existingTags = (await $`git tag -l`).toString().split("\n").slice(0, -1);
 const inputTag = getRequiredEnvVar("GIT_TAG");
 const nextTagVersion = getNextTagVersion(existingTags, inputTag);
 
-await $`git tag -a ${nextTagVersion}`;
+await $`git tag -a ${nextTagVersion} -m "auto-tag ${nextTagVersion}"`;
 await $`git push origin ${nextTagVersion} --force`;
 
 /**
