@@ -2,10 +2,7 @@ name: Version each tag when created
 
 on:
   push:
-    branches:
-      - main
-  # push:
-  #   tags: [dev, stage, prod, bird]
+    tags: [dev, stage, prod, bird]
 
 jobs:
   main:

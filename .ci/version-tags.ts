@@ -9,12 +9,6 @@ let existingTags = (await $`git tag -l`).toString().split("\n").slice(0, -1);
 const inputTag = getRequiredEnvVar("GIT_TAG");
 const nextTagVersion = getNextTagVersion(existingTags, inputTag);
 
-if(['dev', 'stage', 'prod', 'bird'].includes(inputTag)===false){
-    // this is not something that we want to tag
-    console.error(`Will not tag ${inputTag}.`);
-    process.exit(-1); 
-}
-
 await $`git tag -a ${nextTagVersion}`;
 await $`git push origin ${nextTagVersion} --force`;
 
