@@ -10,6 +10,7 @@ const featureBranchPrefix = 'upgrade-helm';
 const chartVersionFileName = 'chart-version.txt';
 const prTitle = 'Bump helm-chart version to {backboneHelmChartVersion}';
 const [owner, repo] = getRequiredEnvVar('GITHUB_REPOSITORY').split('/');
+const featureBranchName = (featureBranchPrefix:string, chartVersion:string) => `${featureBranchPrefix}/${chartVersion}'`;
 
 await main();
 
@@ -22,20 +23,20 @@ async function main(): Promise<void> {
   }
 
   await deleteExistingBranches();
-  const featureBranchName = `${featureBranchPrefix}/${backboneHelmChartVersion}`;
-  await createFeatureBranch(featureBranchName, backboneHelmChartVersion);
-  const prUrl = await createPr(featureBranchName);
+  const branchName = featureBranchName(featureBranchPrefix, backboneHelmChartVersion);
+  await createFeatureBranch(branchName, backboneHelmChartVersion);
+  const prUrl = await createPr(branchName);
   console.log(`PR created: ${prUrl}`);
 }
 
-function isChartVersionFileUpToDate(version: string) : boolean{
-  const chartVersionFileContent = fs.readFileSync(chartVersionFileName).toString().trim()
+function isChartVersionFileUpToDate(version: string): boolean {
+  const chartVersionFileContent = fs.readFileSync(chartVersionFileName).toString().trim();
   return chartVersionFileContent === version;
 }
 
 async function pullRequestForVersionExists(version: string): Promise<boolean> {
   const pulls = await octokit.rest.pulls.list({ owner, repo, state: 'open' });
-  return pulls.data.some(p => p.head.ref == `${featureBranchPrefix}/${version}`);
+  return pulls.data.some(p => p.head.ref == featureBranchName(featureBranchPrefix, version));
 }
 
 async function createPr(head: string): Promise<string> {
