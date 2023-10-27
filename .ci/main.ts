@@ -4,38 +4,52 @@ import { Octokit } from '@octokit/rest';
 import { $, fs } from 'zx';
 import { getRequiredEnvVar } from './lib.js';
 
-async function main(): Promise<void> {
-  const GITHUB_TOKEN = getRequiredEnvVar('GITHUB_TOKEN');
-  const GITHUB_REPOSITORY = getRequiredEnvVar('GITHUB_REPOSITORY');
-  const octokit = new Octokit({ auth: GITHUB_TOKEN });
-  const featureBranchPrefix = 'upgrade-helm';
+const GITHUB_TOKEN = getRequiredEnvVar('GITHUB_TOKEN');
+const octokit = new Octokit({ auth: GITHUB_TOKEN });
+const featureBranchPrefix = 'upgrade-helm';
+const chartVersionFileName = 'chart-version.txt';
+const prTitle = 'Bump helm-chart version to {backboneHelmChartVersion}';
+const [owner, repo] = getRequiredEnvVar('GITHUB_REPOSITORY').split('/');
 
-  const chartVersionFileContent = fs.readFileSync('chart-version.txt').toString().trim();
-  const pullRequestVersion = await getVersionFromPullRequestsByLogin(octokit, GITHUB_REPOSITORY, 'github-actions[bot]');
+await main();
+
+function formatString(template: string, ...params: string[]): string {
+  return template.replace(/{.+?}/g, (match, _) => {
+    if (params.length > 0) {
+      return params.shift() || '';
+    } else {
+      return `${match}`;
+    }
+  });
+}
+
+async function main(): Promise<void> {
+  const chartVersionFileContent = fs.readFileSync(chartVersionFileName).toString().trim();
+  const pullRequestVersion = await getVersionFromPullRequests();
   const backboneHelmChartVersion = await getVersionFromEnmeshedBackboneRepositoryHelmChart(octokit);
 
   if (backboneHelmChartVersion !== chartVersionFileContent && backboneHelmChartVersion !== pullRequestVersion) {
-    await deleteUpgradeHelmBranches(octokit, GITHUB_REPOSITORY, featureBranchPrefix);
+    await deleteUpgradeHelmBranches(featureBranchPrefix);
 
     const featureBranchName = `${featureBranchPrefix}/${backboneHelmChartVersion}`;
     await createFeatureBranch(featureBranchName, backboneHelmChartVersion);
-    const prUrl = await createPr(octokit, GITHUB_REPOSITORY, `Bump helm-chart version to ${backboneHelmChartVersion}`, 'Created by bot', 'main', featureBranchName);
+    const prUrl = await createPr(featureBranchName);
     console.log(`PR created: ${prUrl}`);
   } else {
     console.log('nothing to do.');
   }
 }
 
-async function createPr(octokit: Octokit, GITHUB_REPOSITORY: string, title: string, body: string, base: string, head: string): Promise<string> {
-  const [owner, repo] = GITHUB_REPOSITORY.split('/');
-  const pr = await octokit.pulls.create({ owner, repo, head, base, title, body });
+async function createPr(head: string): Promise<string> {
+  
+  let title = formatString(prTitle, head);
+  const pr = await octokit.pulls.create({ owner, repo, head, base: 'main', title });
   return pr.data.url;
 }
 
-async function getVersionFromPullRequestsByLogin(octokit: Octokit, GITHUB_REPOSITORY: string, loginName: string): Promise<string> {
-  const [owner, repo] = GITHUB_REPOSITORY.split('/');
+async function getVersionFromPullRequests(): Promise<string> {
   const pulls = await octokit.rest.pulls.list({ owner, repo, state: 'open' });
-  const relevantPulls = pulls.data.filter(p => p.user?.login === loginName && p.title.match('v[0-9]+.[0-9]+.[0-9]+$') != null);
+  const relevantPulls = pulls.data.filter(p => p.head.ref.startsWith(featureBranchPrefix));
   if (relevantPulls.length > 0) {
     const matches = relevantPulls[0].title.match('v[0-9]+.[0-9]+.[0-9]+$');
     return matches?.[0] ?? 'no-pr';
@@ -56,10 +70,7 @@ async function getVersionFromEnmeshedBackboneRepositoryHelmChart(octokit: Octoki
   }
 }
 
-await main();
-
-async function deleteUpgradeHelmBranches(octokit: Octokit, GITHUB_REPOSITORY: string, featureBranchPrefix: string): Promise<number> {
-  const [owner, repo] = GITHUB_REPOSITORY.split('/');
+async function deleteUpgradeHelmBranches(featureBranchPrefix: string): Promise<number> {
   const branches = await octokit.repos.listBranches({ owner, repo, per_page: 100 });
   const featureBranches = branches.data.filter(b => b.name.startsWith(featureBranchPrefix));
 
@@ -74,8 +85,8 @@ async function createFeatureBranch(featureBranchName: string, backboneHelmChartV
   await $`git config --global user.email "actions@github.com"`;
   await $`git config --global user.name "GitHub Actions"`;
   await $`git checkout -b ${featureBranchName} main`;
-  await $`echo ${backboneHelmChartVersion} > chart-version.txt`;
-  await $`git add chart-version.txt`;
+  fs.writeFileSync(chartVersionFileName, backboneHelmChartVersion);
+  await $`git add ${chartVersionFileName}`;
   await $`git commit -m "Update chart version to ${backboneHelmChartVersion}"`;
   await $`git push --set-upstream origin ${featureBranchName}`;
 }
