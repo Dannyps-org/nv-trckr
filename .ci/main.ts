@@ -13,71 +13,53 @@ const [owner, repo] = getRequiredEnvVar('GITHUB_REPOSITORY').split('/');
 
 await main();
 
-function formatString(template: string, ...params: string[]): string {
-  return template.replace(/{.+?}/g, (match, _) => {
-    if (params.length > 0) {
-      return params.shift() || '';
-    } else {
-      return `${match}`;
-    }
-  });
+async function main(): Promise<void> {
+  const backboneHelmChartVersion = await getVersionFromEnmeshedBackboneRepositoryHelmChart();
+
+  if (isChartVersionFileUpToDate(backboneHelmChartVersion) || await pullRequestForVersionExists(backboneHelmChartVersion)) {
+    console.log('nothing to do.');
+    return;
+  }
+
+  await deleteExistingBranches();
+  const featureBranchName = `${featureBranchPrefix}/${backboneHelmChartVersion}`;
+  await createFeatureBranch(featureBranchName, backboneHelmChartVersion);
+  const prUrl = await createPr(featureBranchName);
+  console.log(`PR created: ${prUrl}`);
 }
 
-async function main(): Promise<void> {
-  const chartVersionFileContent = fs.readFileSync(chartVersionFileName).toString().trim();
-  const pullRequestVersion = await getVersionFromPullRequests();
-  const backboneHelmChartVersion = await getVersionFromEnmeshedBackboneRepositoryHelmChart(octokit);
+function isChartVersionFileUpToDate(version: string) : boolean{
+  const chartVersionFileContent = fs.readFileSync(chartVersionFileName).toString().trim()
+  return chartVersionFileContent === version;
+}
 
-  if (backboneHelmChartVersion !== chartVersionFileContent && backboneHelmChartVersion !== pullRequestVersion) {
-    await deleteUpgradeHelmBranches(featureBranchPrefix);
-
-    const featureBranchName = `${featureBranchPrefix}/${backboneHelmChartVersion}`;
-    await createFeatureBranch(featureBranchName, backboneHelmChartVersion);
-    const prUrl = await createPr(featureBranchName);
-    console.log(`PR created: ${prUrl}`);
-  } else {
-    console.log('nothing to do.');
-  }
+async function pullRequestForVersionExists(version: string): Promise<boolean> {
+  const pulls = await octokit.rest.pulls.list({ owner, repo, state: 'open' });
+  return pulls.data.some(p => p.head.ref == `${featureBranchPrefix}/${version}`);
 }
 
 async function createPr(head: string): Promise<string> {
-  
-  let title = formatString(prTitle, head);
+  const title = formatString(prTitle, head);
   const pr = await octokit.pulls.create({ owner, repo, head, base: 'main', title });
   return pr.data.url;
 }
 
-async function getVersionFromPullRequests(): Promise<string> {
-  const pulls = await octokit.rest.pulls.list({ owner, repo, state: 'open' });
-  const relevantPulls = pulls.data.filter(p => p.head.ref.startsWith(featureBranchPrefix));
-  if (relevantPulls.length > 0) {
-    const matches = relevantPulls[0].title.match('v[0-9]+.[0-9]+.[0-9]+$');
-    return matches?.[0] ?? 'no-pr';
-  } else {
-    return 'no-pr';
-  }
-}
-
-async function getVersionFromEnmeshedBackboneRepositoryHelmChart(octokit: Octokit): Promise<string> {
+async function getVersionFromEnmeshedBackboneRepositoryHelmChart(): Promise<string> {
   const tagPrefix = 'helm/';
 
   const releases = await octokit.rest.repos.listReleases({ owner: 'nmshd', repo: 'backbone' });
-  const relevantReleases = releases.data.filter(p => p.tag_name?.startsWith(tagPrefix));
-  if (relevantReleases.length > 0) {
-    return relevantReleases[0].tag_name?.split(tagPrefix)[1] ?? 'no-release';
-  } else {
-    return 'no-release';
-  }
+  const relevantRelease = releases.data.find(p => p.tag_name?.startsWith(tagPrefix))!;
+  return relevantRelease.tag_name!.split(tagPrefix)[1];
 }
 
-async function deleteUpgradeHelmBranches(featureBranchPrefix: string): Promise<number> {
+async function deleteExistingBranches(): Promise<number> {
   const branches = await octokit.repos.listBranches({ owner, repo, per_page: 100 });
   const featureBranches = branches.data.filter(b => b.name.startsWith(featureBranchPrefix));
 
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  featureBranches.forEach(async branch => {
-    await octokit.git.deleteRef({ owner, repo, ref: `heads/${branch.name}` });
-  });
+  for (const featureBranch of featureBranches) {
+    await octokit.git.deleteRef({ owner, repo, ref: `heads/${featureBranch.name}` });
+  }
+
   return featureBranches.length;
 }
 
@@ -89,4 +71,14 @@ async function createFeatureBranch(featureBranchName: string, backboneHelmChartV
   await $`git add ${chartVersionFileName}`;
   await $`git commit -m "Update chart version to ${backboneHelmChartVersion}"`;
   await $`git push --set-upstream origin ${featureBranchName}`;
+}
+
+function formatString(template: string, ...params: string[]): string {
+  return template.replace(/{.+?}/g, (match, _) => {
+    if (params.length > 0) {
+      return params.shift() || '';
+    } else {
+      return `${match}`;
+    }
+  });
 }
