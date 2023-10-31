@@ -4,39 +4,37 @@ import { Octokit } from "@octokit/rest";
 import { $, fs } from "zx";
 import { getRequiredEnvVar } from "./lib.js";
 
-const GITHUB_TOKEN = getRequiredEnvVar("GITHUB_TOKEN");
-const octokit = new Octokit({ auth: GITHUB_TOKEN });
+const [owner, repo] = getRequiredEnvVar("GITHUB_REPOSITORY").split("/");
+const githubToken = getRequiredEnvVar("GITHUB_TOKEN");
+const octokit = new Octokit({ auth: githubToken });
+
 const featureBranchPrefix = "upgrade-helm";
 const chartVersionFileName = "chart-version.txt";
 const prTitle = (newVersion: string) => `Bump helm-chart version to ${newVersion}`;
-const [owner, repo] = getRequiredEnvVar("GITHUB_REPOSITORY").split("/");
-const featureBranchName = (branchPrefix: string, newVersion: string) => `${branchPrefix}/${newVersion}'`;
+const featureBranchName = (newVersion: string) => `${featureBranchPrefix}/${newVersion}'`;
 
 await main();
 
 async function main(): Promise<void> {
-    const backboneHelmChartVersion = await getVersionFromEnmeshedBackboneRepositoryHelmChart();
+    const latestChartVersion = await getLatestChartVersion();
 
-    if (
-        isChartVersionFileUpToDate(backboneHelmChartVersion) ||
-        (await doesPullRequestForVersionExist(backboneHelmChartVersion))
-    ) {
+    if (isChartVersionFileUpToDate(latestChartVersion) || (await doesPullRequestForVersionExist(latestChartVersion))) {
         console.log("nothing to do.");
         return;
     }
 
     await deleteExistingBranches();
-    const branchName = await createFeatureBranch(backboneHelmChartVersion);
+    const branchName = await createBranch(latestChartVersion);
     const prUrl = await createPr(branchName);
     console.log(`PR created: ${prUrl}`);
 }
 
-async function getVersionFromEnmeshedBackboneRepositoryHelmChart(): Promise<string> {
+async function getLatestChartVersion(): Promise<string> {
     const tagPrefix = "helm/";
 
     const releases = await octokit.rest.repos.listReleases({ owner: "nmshd", repo: "backbone" });
-    const relevantRelease = releases.data.find((p) => p.tag_name?.startsWith(tagPrefix))!;
-    return relevantRelease.tag_name!.split(tagPrefix)[1];
+    const latestRelease = releases.data.find((p) => p.tag_name?.startsWith(tagPrefix))!;
+    return latestRelease.tag_name!.split(tagPrefix)[1];
 }
 
 function isChartVersionFileUpToDate(version: string): boolean {
@@ -46,7 +44,7 @@ function isChartVersionFileUpToDate(version: string): boolean {
 
 async function doesPullRequestForVersionExist(version: string): Promise<boolean> {
     const pulls = await octokit.rest.pulls.list({ owner, repo, state: "open" });
-    return pulls.data.some((p) => p.head.ref == featureBranchName(featureBranchPrefix, version));
+    return pulls.data.some((p) => p.head.ref == featureBranchName(version));
 }
 
 async function deleteExistingBranches(): Promise<number> {
@@ -60,15 +58,15 @@ async function deleteExistingBranches(): Promise<number> {
     return featureBranches.length;
 }
 
-async function createFeatureBranch(backboneHelmChartVersion: string): Promise<string> {
-    const branchName = featureBranchName(featureBranchPrefix, backboneHelmChartVersion);
+async function createBranch(chartVersion: string): Promise<string> {
+    const branchName = featureBranchName(chartVersion);
 
     await $`git config --global user.email "actions@github.com"`;
     await $`git config --global user.name "GitHub Actions"`;
     await $`git checkout -b ${featureBranchName} main`;
-    fs.writeFileSync(chartVersionFileName, backboneHelmChartVersion);
+    fs.writeFileSync(chartVersionFileName, chartVersion);
     await $`git add ${chartVersionFileName}`;
-    await $`git commit -m "Update chart version to ${backboneHelmChartVersion}"`;
+    await $`git commit -m "Update chart version to ${chartVersion}"`;
     await $`git push --set-upstream origin ${featureBranchName}`;
 
     return branchName;
