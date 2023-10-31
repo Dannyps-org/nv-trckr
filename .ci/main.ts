@@ -8,7 +8,7 @@ const GITHUB_TOKEN = getRequiredEnvVar('GITHUB_TOKEN');
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 const featureBranchPrefix = 'upgrade-helm';
 const chartVersionFileName = 'chart-version.txt';
-const prTitle = 'Bump helm-chart version to {backboneHelmChartVersion}';
+const prTitle = (newVersion: string) => `Bump helm-chart version to ${newVersion}`;
 const [owner, repo] = getRequiredEnvVar('GITHUB_REPOSITORY').split('/');
 const featureBranchName = (featureBranchPrefix:string, chartVersion:string) => `${featureBranchPrefix}/${chartVersion}'`;
 
@@ -40,7 +40,7 @@ async function pullRequestForVersionExists(version: string): Promise<boolean> {
 }
 
 async function createPr(head: string): Promise<string> {
-  const title = formatString(prTitle, head);
+  const title = prTitle(head);
   const pr = await octokit.pulls.create({ owner, repo, head, base: 'main', title });
   return pr.data.url;
 }
@@ -72,14 +72,4 @@ async function createFeatureBranch(featureBranchName: string, backboneHelmChartV
   await $`git add ${chartVersionFileName}`;
   await $`git commit -m "Update chart version to ${backboneHelmChartVersion}"`;
   await $`git push --set-upstream origin ${featureBranchName}`;
-}
-
-function formatString(template: string, ...params: string[]): string {
-  return template.replace(/{.+?}/g, (match, _) => {
-    if (params.length > 0) {
-      return params.shift() || '';
-    } else {
-      return `${match}`;
-    }
-  });
 }
