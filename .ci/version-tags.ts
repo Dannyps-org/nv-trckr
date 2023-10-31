@@ -4,7 +4,7 @@ import { $ } from "zx";
 import { getRequiredEnvVar } from "./lib.js";
 
 await $`git fetch --tags --force`;
-const existingTags = (await $`git tag -l`).toString().split("\n").slice(0, -1);
+const existingTags = (await $`git tag -l`).stdout.split("\n").slice(0, -1);
 
 const inputTag = getRequiredEnvVar("GIT_TAG");
 const nextTagVersion = getNextTagVersion(existingTags, inputTag);
