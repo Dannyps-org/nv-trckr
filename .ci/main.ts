@@ -1,7 +1,7 @@
-#!/usr/bin/env -S npx ts-node --esm
+#!/usr/bin/env -S npx tsx
 
 import { Octokit } from "@octokit/rest";
-import { $, fs } from "zx";
+import { $ } from "zx";
 import { getRequiredEnvVar } from "./lib.js";
 import { ChartVersionFile } from "./ChartVersionFile.js";
 

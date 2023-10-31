@@ -1,4 +1,4 @@
-#!/usr/bin/env -S npx ts-node --esm
+#!/usr/bin/env -S npx tsx
 
 import { $ } from "zx";
 import { getRequiredEnvVar } from "./lib.js";
