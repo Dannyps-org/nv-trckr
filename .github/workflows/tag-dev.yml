@@ -20,5 +20,5 @@ jobs:
 
       - name: Tag as Dev
         run: |
-          git tag -a dev -m "auto-tag dev"
+          git tag dev
           git push origin dev --force

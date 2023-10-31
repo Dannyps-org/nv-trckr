@@ -12,7 +12,7 @@ async function main() {
     const inputTag = getRequiredEnvVar("GIT_TAG");
     const nextTagVersion = getNextTagVersion(existingTags, inputTag);
 
-    await $`git tag -a ${nextTagVersion} -m "auto-tag ${nextTagVersion}"`;
+    await $`git tag ${nextTagVersion}`;
     await $`git push origin ${nextTagVersion} --force`;
 }
 
