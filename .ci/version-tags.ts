@@ -3,14 +3,18 @@
 import { $ } from "zx";
 import { getRequiredEnvVar } from "./lib.js";
 
-await $`git fetch --tags --force`;
-const existingTags = (await $`git tag -l`).stdout.split("\n").slice(0, -1);
+await main();
 
-const inputTag = getRequiredEnvVar("GIT_TAG");
-const nextTagVersion = getNextTagVersion(existingTags, inputTag);
+async function main() {
+    await $`git fetch --tags --force`;
+    const existingTags = (await $`git tag -l`).stdout.split("\n").slice(0, -1);
 
-await $`git tag -a ${nextTagVersion} -m "auto-tag ${nextTagVersion}"`;
-await $`git push origin ${nextTagVersion} --force`;
+    const inputTag = getRequiredEnvVar("GIT_TAG");
+    const nextTagVersion = getNextTagVersion(existingTags, inputTag);
+
+    await $`git tag -a ${nextTagVersion} -m "auto-tag ${nextTagVersion}"`;
+    await $`git push origin ${nextTagVersion} --force`;
+}
 
 /**
  * Given a list of existing tags of the form `name-version` (e.g. `dev-2`, `stage-4`), and a tag name such as `dev`,
