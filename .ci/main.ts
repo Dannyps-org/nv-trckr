@@ -3,13 +3,13 @@
 import { Octokit } from "@octokit/rest";
 import { $, fs } from "zx";
 import { getRequiredEnvVar } from "./lib.js";
+import { ChartVersionFile } from "./ChartVersionFile.js";
 
 const [owner, repo] = getRequiredEnvVar("GITHUB_REPOSITORY").split("/");
 const githubToken = getRequiredEnvVar("GITHUB_TOKEN");
 const octokit = new Octokit({ auth: githubToken });
 
 const featureBranchPrefix = "upgrade-helm";
-const chartVersionFileName = "chart-version.txt";
 const prTitle = (newVersion: string) => `Bump helm-chart version to ${newVersion}`;
 const featureBranchName = (newVersion: string) => `${featureBranchPrefix}/${newVersion}'`;
 
@@ -37,9 +37,9 @@ async function getLatestChartVersion(): Promise<string> {
     return latestRelease.tag_name!.split(tagPrefix)[1];
 }
 
-function isChartVersionFileUpToDate(version: string): boolean {
-    const chartVersionFileContent = fs.readFileSync(chartVersionFileName).toString().trim();
-    return chartVersionFileContent === version;
+function isChartVersionFileUpToDate(latestVersion: string): boolean {
+    const chartVersionFileContent = ChartVersionFile.read();
+    return chartVersionFileContent === latestVersion;
 }
 
 async function doesPullRequestForVersionExist(version: string): Promise<boolean> {
@@ -64,8 +64,8 @@ async function createBranch(chartVersion: string): Promise<string> {
     await $`git config --global user.email "actions@github.com"`;
     await $`git config --global user.name "GitHub Actions"`;
     await $`git checkout -b ${featureBranchName} main`;
-    fs.writeFileSync(chartVersionFileName, chartVersion);
-    await $`git add ${chartVersionFileName}`;
+    ChartVersionFile.write(chartVersion);
+    await $`git add ${ChartVersionFile.name}`;
     await $`git commit -m "Update chart version to ${chartVersion}"`;
     await $`git push --set-upstream origin ${featureBranchName}`;
 
