@@ -17,16 +17,15 @@ await $`git push origin ${nextTagVersion} --force`;
  * returns a new tag with the specified name and the incremented version number.
  */
 function getNextTagVersion(existingTags: string[], tag: string): string {
-  // Find all tags with the specified name and extract their version numbers
-  const matchingTags = existingTags
-    .filter((existingTag) => existingTag.startsWith(tag + "-"))
-    .map((existingTag) => parseInt(existingTag.split("-")[1]))
-    .filter((versionNumber) => !isNaN(versionNumber));
+    // Find all tags with the specified name and extract their version numbers
+    const matchingTags = existingTags
+        .filter((existingTag) => existingTag.startsWith(tag + "-"))
+        .map((existingTag) => parseInt(existingTag.split("-")[1]))
+        .filter((versionNumber) => !isNaN(versionNumber));
 
-  // Determine the next version number
-  const nextVersion =
-    matchingTags.length > 0 ? Math.max(...matchingTags) + 1 : 1;
+    // Determine the next version number
+    const nextVersion = matchingTags.length > 0 ? Math.max(...matchingTags) + 1 : 1;
 
-  // Construct and return the next tag
-  return `${tag}-${nextVersion}`;
+    // Construct and return the next tag
+    return `${tag}-${nextVersion}`;
 }
