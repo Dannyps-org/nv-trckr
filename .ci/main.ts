@@ -24,9 +24,8 @@ async function main(): Promise<void> {
     }
 
     await deleteExistingBranches();
-    const branchName = await createBranch(latestChartVersion);
-    const pullRequestUrl = await createPullRequest(branchName);
-    console.log(`PR created: ${pullRequestUrl}`);
+    const pullRequestUrl = await createPullRequestForNewChartVersion(latestChartVersion);
+    console.log(`Pull Request created: ${pullRequestUrl}`);
 }
 
 async function getLatestChartVersion(): Promise<string> {
@@ -56,22 +55,32 @@ async function deleteExistingBranches(): Promise<void> {
     }
 }
 
+async function createPullRequestForNewChartVersion(latestChartVersion: string) {
+    const branchName = await createBranch(latestChartVersion);
+    ChartVersionFile.write(latestChartVersion);
+    await commitAndPush(latestChartVersion);
+    const pullRequestUrl = await createPullRequest(branchName);
+    return pullRequestUrl;
+}
+
 async function createBranch(chartVersion: string): Promise<string> {
     const branchName = generateBranchName(chartVersion);
 
     await $`git config --global user.email "actions@github.com"`;
     await $`git config --global user.name "GitHub Actions"`;
-    await $`git checkout -b ${generateBranchName} main`;
-    ChartVersionFile.write(chartVersion);
-    await $`git add ${ChartVersionFile.name}`;
-    await $`git commit -m "Update chart version to ${chartVersion}"`;
-    await $`git push --set-upstream origin ${generateBranchName}`;
+    await $`git checkout -b ${branchName} main`;
 
     return branchName;
 }
 
-async function createPullRequest(head: string): Promise<string> {
-    const title = generatePullRequestTitle(head);
-    const pullRequest = await octokit.pulls.create({ owner, repo, head, base: "main", title });
+async function commitAndPush(chartVersion: string): Promise<void> {
+    await $`git add ${ChartVersionFile.name}`;
+    await $`git commit -m "Update chart version to ${chartVersion}"`;
+    await $`git push --set-upstream origin HEAD`;
+}
+
+async function createPullRequest(branchName: string): Promise<string> {
+    const title = generatePullRequestTitle(branchName);
+    const pullRequest = await octokit.pulls.create({ owner, repo, head: branchName, base: "main", title });
     return pullRequest.data.url;
 }
