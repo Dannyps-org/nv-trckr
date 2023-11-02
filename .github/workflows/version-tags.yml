@@ -5,17 +5,15 @@ on:
     tags: [dev, stage, prod, bird]
 
 jobs:
-  main:
-    environment: ${{ github.ref_name }}
+  tag:
+    name: Version tag
     runs-on: ubuntu-latest
-    container: mcr.microsoft.com/azure-cli
-    name: Version tag & deploy to Azure
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install script dependencies
-        run: sudo apt install npm && npm install --prefix ./.ci
+        run: npm install --prefix ./.ci
 
       - name: Set up Git
         run: |
@@ -29,6 +27,13 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GIT_TAG: ${{ github.ref_name }}
 
+  deploy:
+    environment: ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/azure-cli
+    name: Version tag & deploy to Azure
+    needs: tag 
+    steps:
       - name: Setup helm
         uses: azure/setup-helm@v3
         with:
@@ -46,4 +51,3 @@ jobs:
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-
