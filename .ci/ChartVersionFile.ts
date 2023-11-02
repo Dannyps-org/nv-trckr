@@ -1,4 +1,4 @@
-import { fs } from "zx/.";
+import { fs } from "zx";
 
 export class ChartVersionFile {
     public static readonly name = "chart-version.txt";
