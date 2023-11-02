@@ -6,8 +6,10 @@ on:
 
 jobs:
   main:
-    name: Version tag
+    environment: ${{ github.ref_name }}
     runs-on: ubuntu-latest
+    container: mcr.microsoft.com/azure-cli
+    name: Version tag & deploy to Azure
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,3 +28,22 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GIT_TAG: ${{ github.ref_name }}
+
+      - name: Setup helm
+        uses: azure/setup-helm@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: "v3.12.3" # this version is pinned because of a bug(?) in helm v3.13.0 that causes the deployment to fail with status code 403 (see https://github.com/js-soft/nmshd-bkb-env-tracker/actions/runs/6407007169/job/17417575013#step:6:80 for an example)
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+      - name: Run Deployment
+        run: bash ./deploy.sh
+        env:
+          TARGET_ENVIRONMENT: ${{ github.ref_name }}
+          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          AZURE_AKS: ${{ vars.AZURE_AKS }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
