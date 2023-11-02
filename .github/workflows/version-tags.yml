@@ -1,4 +1,4 @@
-name: Version each tag when created
+name: Version each tag when created and deploy
 
 on:
   push:
@@ -31,16 +31,21 @@ jobs:
     environment: ${{ github.ref_name }}
     runs-on: ubuntu-latest
     container: mcr.microsoft.com/azure-cli
-    name: Version tag & deploy to Azure
+    name: Deploy to Azure
     needs: tag 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup helm
         uses: azure/setup-helm@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           version: "v3.12.3" # this version is pinned because of a bug(?) in helm v3.13.0 that causes the deployment to fail with status code 403 (see https://github.com/js-soft/nmshd-bkb-env-tracker/actions/runs/6407007169/job/17417575013#step:6:80 for an example)
+
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
+      
       - name: Run Deployment
         run: bash ./deploy.sh
         env:
