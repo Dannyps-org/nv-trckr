@@ -72,6 +72,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          path: repo
           token: ${{ secrets.PAT }}
 
       - name: Checkout gh-pages branch
@@ -86,21 +87,18 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
 
-      - name: ls
-        run: ls -alh && ls -alh gh-pages
-
       - name: Cache Gradle packages
         uses: actions/cache@v3
         with:
           path: |
-            ./.ci/node_modules
+            ./repo/.ci/node_modules
           key: ${{ runner.os }}-build-${{ hashFiles('./.ci/package-lock.json') }}
 
       - name: Install script dependencies
-        run: npm install --prefix ./.ci
+        run: npm install --prefix ./repo/.ci
 
       - name: Update gh-pages
-        run: ./.ci/update-gh-pages.ts
+        run: ./repo/.ci/update-gh-pages.ts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}

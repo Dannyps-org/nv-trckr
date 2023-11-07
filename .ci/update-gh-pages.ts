@@ -10,7 +10,7 @@ type Environment = typeof environments[number];
 const [_, repo] = getRequiredEnvVar("GITHUB_REPOSITORY").split("/");
 const githubToken = getRequiredEnvVar("GITHUB_TOKEN");
 const octokit = new Octokit({ auth: githubToken });
-const githubPagesDir = "gh-pages"
+const githubPagesDir = "../gh-pages"
 
 const configFileName = `${githubPagesDir}/_config.yml`;
 const configStubFileName = `${githubPagesDir}/_config.stub.yml`;
