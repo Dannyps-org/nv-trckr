@@ -63,13 +63,20 @@ async function getDetailsForEnv(env: Environment): Promise<RefDetails> {
         commit_sha: ref.data.object.sha,
     });
 
+    const compare = await octokit.rest.repos.compareCommits({
+        owner,
+        repo,
+        base: 'main',
+        head: env
+    });
+
     return {
         env,
         hash: commit.data.sha.substring(0, 6),
         url: commit.data.html_url,
         message: commit.data.message,
         date: commit.data.author.date,
-        behindMainCommitCount: 0
+        behindMainCommitCount: compare.data.behind_by
     };
 
 }
