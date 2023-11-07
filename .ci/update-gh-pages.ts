@@ -7,9 +7,9 @@ import { getRequiredEnvVar } from "./lib";
 const environments = ["dev", "stage", "prod", "bird"] as const;
 type Environment = typeof environments[number];
 
-$`ls`;
+$`ls -alh`;
 $`cd gh-pages`;
-$`ls`;
+$`ls -alh`;
 const [_, repo] = getRequiredEnvVar("GITHUB_REPOSITORY").split("/");
 const githubToken = getRequiredEnvVar("GITHUB_TOKEN");
 const octokit = new Octokit({ auth: githubToken });
@@ -30,7 +30,7 @@ environments.forEach(env => {
     fs.appendFile(indexFileName, `| ${details.env} | [${details.hash}](${details.url}) | ${details.message} | ${details.date} | ${details.behindMainCommitCount} |\n`);
 });
 
-fs.appendFile(configFileName, `description=Last updated on ${new Date().toDateString()}`)
+fs.appendFile(configFileName, `description: Last updated on ${new Date().toDateString()}\n`)
 
 $`git add . && git commit -m "Update github pages"`;
 
