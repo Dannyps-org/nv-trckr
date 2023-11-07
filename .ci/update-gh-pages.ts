@@ -12,7 +12,8 @@ $`cd gh-pages`;
 const [_, repo] = getRequiredEnvVar("GITHUB_REPOSITORY").split("/");
 const githubToken = getRequiredEnvVar("GITHUB_TOKEN");
 const octokit = new Octokit({ auth: githubToken });
-
+const files = await fs.readdir(".")
+console.log(files)
 const configFileName = "_config.yml";
 const configStubFileName = "_config.stub.yml";
 
