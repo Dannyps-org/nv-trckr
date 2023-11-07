@@ -6,27 +6,17 @@ import { getRequiredEnvVar } from "./lib";
 
 const environments = ["dev", "stage", "prod", "bird"] as const;
 type Environment = typeof environments[number];
-console.log(process.cwd())
-console.log(await fs.readdir("."));
-
-process.chdir("gh-pages")
-console.log(process.cwd())
-console.log(await fs.readdir("."));
-
-process.chdir("gh-pages")
-console.log(process.cwd())
-console.log(await fs.readdir("."));
 
 const [_, repo] = getRequiredEnvVar("GITHUB_REPOSITORY").split("/");
 const githubToken = getRequiredEnvVar("GITHUB_TOKEN");
 const octokit = new Octokit({ auth: githubToken });
+const githubPagesDir = "gh-pages"
 
+const configFileName = `${githubPagesDir}/_config.yml`;
+const configStubFileName = `${githubPagesDir}/_config.stub.yml`;
 
-const configFileName = "_config.yml";
-const configStubFileName = "_config.stub.yml";
-
-const indexFileName="index.markdown";
-const indexStubFileName="index.stub.markdown";
+const indexFileName=`${githubPagesDir}/index.markdown`;
+const indexStubFileName=`${githubPagesDir}/index.stub.markdown`;
 
 fs.writeFile(configFileName, await fs.readFile(configStubFileName));
 fs.writeFile(indexFileName, await fs.readFile(indexStubFileName));
