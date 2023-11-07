@@ -57,7 +57,7 @@ async function getDetailsForEnv(env: Environment): Promise<RefDetails> {
             repo,
             tag_sha: ref.data.object.sha,
         });
-
+console.log(tag.data.object);
         commit = await octokit.rest.git.getCommit({
             owner,
             repo,
