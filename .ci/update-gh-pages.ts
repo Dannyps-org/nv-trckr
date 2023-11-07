@@ -65,7 +65,7 @@ async function getDetailsForEnv(env: Environment): Promise<RefDetails> {
 
     return {
         env,
-        hash: ref.data.object.sha,
+        hash: commit.data.sha.substring(0, 6),
         url: commit.data.html_url,
         message: commit.data.message,
         date: commit.data.author.date,
