@@ -1,0 +1,19 @@
+<footer class="site-footer h-card">
+    <data class="u-url" href="{{ " /" | relative_url }}"></data>
+
+    <div class="wrapper">
+
+        <div class="footer-col-wrapper" style="display: flex; flex-direction: row-reverse;">
+            <div class="footer-col">
+                <p>{{ site.description | escape }}</p>
+            </div>
+            <div class="footer-col">
+                {% if site.other_url -%}
+                <ul class="contact-list">
+                    <li><a class="u-url" href="{{ site.other_url }}">{{ site.other_url }}</a></li>
+                </ul>
+                {%- endif %}
+            </div>
+        </div>
+    </div>
+</footer>
