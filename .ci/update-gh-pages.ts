@@ -30,7 +30,7 @@ environments.forEach(env => {
 
 fs.appendFile(configFileName, `description: Last updated on ${new Date().toDateString()}\n`)
 
-$`git add . && git commit -m "Update github pages"`;
+$`cd gh-pages && git add . && git commit -m "Update github pages"`;
 
 function getDetailsForEnv(env: Environment): { env: Environment, hash: string, url: string, message: string, date: Date, behindMainCommitCount: number; } {
     return {
