@@ -6,7 +6,7 @@ import { getRequiredEnvVar } from "./lib";
 
 const environments = ["dev", "stage", "prod", "bird"] as const;
 type Environment = typeof environments[number];
-type RefDetails = { env: Environment, hash: string, url: string, message: string, date: Date, behindMainCommitCount: number; };
+type RefDetails = { env: Environment, hash: string, url: string, message: string, date: string, behindMainCommitCount: number; };
 
 const [owner, repo] = getRequiredEnvVar("GITHUB_REPOSITORY").split("/");
 const githubToken = getRequiredEnvVar("GITHUB_TOKEN");
@@ -29,11 +29,14 @@ environments.forEach(env => {
     results.push(getDetailsForEnv(env));
 });
 
+let toAppend = '';
 Promise.all(results).then(res => {
     res.forEach(details => {
-        fs.appendFile(indexFileName, `| ${details.env} | [${details.hash}](${details.url}) | ${details.message} | ${details.date} | ${details.behindMainCommitCount} |\n`);
+        toAppend += `| ${details.env} | [${details.hash}](${details.url}) | ${details.message} | ${details.date} | ${details.behindMainCommitCount} |\n`;
     });
 });
+
+fs.appendFile(indexFileName, toAppend);
 
 fs.appendFile(configFileName, `description: Last updated on ${new Date().toDateString()}\n`);
 
@@ -58,7 +61,7 @@ async function getDetailsForEnv(env: Environment): Promise<RefDetails> {
             hash: ref.data.object.sha,
             url: tag.data.url,
             message: tag.data.message,
-            date: new Date(tag.data.tagger.date),
+            date: tag.data.tagger.date,
             behindMainCommitCount: 0
         };
     } else {
@@ -73,7 +76,7 @@ async function getDetailsForEnv(env: Environment): Promise<RefDetails> {
             hash: ref.data.object.sha,
             url: commit.data.url,
             message: commit.data.message,
-            date: new Date(commit.data.author.date),
+            date: commit.data.author.date,
             behindMainCommitCount: 0
         };
     }
