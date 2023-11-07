@@ -13,6 +13,8 @@ const [_, repo] = getRequiredEnvVar("GITHUB_REPOSITORY").split("/");
 const githubToken = getRequiredEnvVar("GITHUB_TOKEN");
 const octokit = new Octokit({ auth: githubToken });
 
+console.log(await fs.readdir("."));
+
 const configFileName = "_config.yml";
 const configStubFileName = "_config.stub.yml";
 
