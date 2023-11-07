@@ -10,6 +10,9 @@ type RefDetails = { env: Environment, hash: string, url: string, message: string
 
 const [owner, repo] = getRequiredEnvVar("GITHUB_REPOSITORY").split("/");
 const githubToken = getRequiredEnvVar("GITHUB_TOKEN");
+const runNumber = getRequiredEnvVar("RUN_NUMBER");
+const runAttempt = getRequiredEnvVar("RUN_ATTEMPT");
+
 const octokit = new Octokit({ auth: githubToken });
 const githubPagesDir = "gh-pages";
 
@@ -38,7 +41,7 @@ await Promise.all(results).then(res => {
 
 fs.appendFile(indexFileName, toAppend);
 
-fs.appendFile(configFileName, `description: Last updated on ${new Date().toDateString()}\n`);
+fs.appendFile(configFileName, `description: Last updated on ${new Date().toDateString()}, ${runNumber}-${runAttempt}\n`);
 
 $`cd gh-pages && git add . && git commit -m "Update github pages"`;
 
