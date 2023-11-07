@@ -41,7 +41,7 @@ await Promise.all(results).then(res => {
 
 fs.appendFile(indexFileName, toAppend);
 
-fs.appendFile(configFileName, `description: Last updated on ${new Date().toDateString()}, ${runNumber}-${runAttempt}\n`);
+fs.appendFile(configFileName, `description: Last updated on ${new Date().toDateString()}, run ${runNumber}.${runAttempt}\n`);
 
 $`cd gh-pages && git add . && git commit -m "Update github pages"`;
 
