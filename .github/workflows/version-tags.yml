@@ -78,7 +78,7 @@ jobs:
       - name: Checkout gh-pages branch
         uses: actions/checkout@v4
         with:
-          branch: gh-pages
+          ref: gh-pages
           path: gh-pages
           token: ${{ secrets.PAT }}
 
