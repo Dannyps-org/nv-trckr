@@ -43,29 +43,21 @@ fs.appendFile(configFileName, `description: Last updated on ${new Date().toDateS
 $`cd gh-pages && git add . && git commit -m "Update github pages"`;
 
 async function getDetailsForEnv(env: Environment): Promise<RefDetails> {
-    const ref = await octokit.rest.git.getRef({
+    let ref: any = await octokit.rest.git.getRef({
         owner,
         repo,
         ref: `tags/${env}`,
     });
 
-    let commit = null;
-
-    if (ref.data.object.type === 'tag') {
-        const tag = await octokit.rest.git.getTag({
+    while (ref.data.object.type === 'tag') {
+        ref = await octokit.rest.git.getTag({
             owner,
             repo,
             tag_sha: ref.data.object.sha,
         });
-console.log(tag.data.object);
-        commit = await octokit.rest.git.getCommit({
-            owner,
-            repo,
-            commit_sha: tag.data.object.sha,
-        });
     }
 
-    commit = await octokit.rest.git.getCommit({
+    const commit = await octokit.rest.git.getCommit({
         owner,
         repo,
         commit_sha: ref.data.object.sha,
