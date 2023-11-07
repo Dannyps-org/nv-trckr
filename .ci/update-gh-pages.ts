@@ -6,8 +6,9 @@ import { getRequiredEnvVar } from "./lib";
 
 const environments = ["dev", "stage", "prod", "bird"] as const;
 type Environment = typeof environments[number];
+type RefDetails = { env: Environment, hash: string, url: string, message: string, date: Date, behindMainCommitCount: number; };
 
-const [_, repo] = getRequiredEnvVar("GITHUB_REPOSITORY").split("/");
+const [owner, repo] = getRequiredEnvVar("GITHUB_REPOSITORY").split("/");
 const githubToken = getRequiredEnvVar("GITHUB_TOKEN");
 const octokit = new Octokit({ auth: githubToken });
 const githubPagesDir = "gh-pages"
@@ -23,21 +24,33 @@ fs.writeFile(indexFileName, await fs.readFile(indexStubFileName));
 
 fs.appendFile(configFileName, `\nbaseurl: /${repo}\n`);
 
+const results = [] as Promise<RefDetails>[]; 
 environments.forEach(env => {
-    const details = getDetailsForEnv(env);
-    fs.appendFile(indexFileName, `| ${details.env} | [${details.hash}](${details.url}) | ${details.message} | ${details.date} | ${details.behindMainCommitCount} |\n`);
+    results.push(getDetailsForEnv(env));
 });
+
+Promise.all(results).then(res=>{
+    res.forEach(details=>{
+        fs.appendFile(indexFileName, `| ${details.env} | [${details.hash}](${details.url}) | ${details.message} | ${details.date} | ${details.behindMainCommitCount} |\n`);
+    })
+})
 
 fs.appendFile(configFileName, `description: Last updated on ${new Date().toDateString()}\n`)
 
 $`cd gh-pages && git add . && git commit -m "Update github pages"`;
 
-function getDetailsForEnv(env: Environment): { env: Environment, hash: string, url: string, message: string, date: Date, behindMainCommitCount: number; } {
+async function getDetailsForEnv(env: Environment): Promise<RefDetails> {
+    const ref = await octokit.rest.git.getRef({
+        owner,
+        repo,
+        ref: env,
+      });
+      
     return {
         env,
-        hash: "xxxxxx",
-        url: "url",
-        message: "message",
+        hash: ref.data.object.sha,
+        url: ref.data.object.url,
+        message: ref.data.object.type,
         date: new Date(),
         behindMainCommitCount: 0
     };

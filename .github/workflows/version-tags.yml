@@ -92,7 +92,7 @@ jobs:
         with:
           path: |
             ./repo/.ci/node_modules
-          key: ${{ runner.os }}-build-${{ hashFiles('./.ci/package-lock.json') }}
+          key: ${{ runner.os }}-build-${{ hashFiles('./repo/.ci/package-lock.json') }}
 
       - name: Install script dependencies
         run: npm install --prefix ./repo/.ci
