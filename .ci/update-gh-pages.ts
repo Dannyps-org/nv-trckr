@@ -35,7 +35,7 @@ Promise.all(results).then(res => {
         toAppend += `| ${details.env} | [${details.hash}](${details.url}) | ${details.message} | ${details.date} | ${details.behindMainCommitCount} |\n`;
     });
 });
-
+console.log(toAppend);
 fs.appendFile(indexFileName, toAppend);
 
 fs.appendFile(configFileName, `description: Last updated on ${new Date().toDateString()}\n`);
