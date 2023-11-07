@@ -87,7 +87,7 @@ jobs:
           git config --global user.name "GitHub Actions"
 
       - name: ls
-        run: ls -alh
+        run: ls -alh && ls -alh gh-pages
 
       - name: Cache Gradle packages
         uses: actions/cache@v3
