@@ -53,16 +53,16 @@ jobs:
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
       
-      - name: Run Deployment
-        run: bash ./deploy.sh
-        env:
-          TARGET_ENVIRONMENT: ${{ github.ref_name }}
-          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
-          AZURE_AKS: ${{ vars.AZURE_AKS }}
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      # - name: Run Deployment
+      #   run: bash ./deploy.sh
+      #   env:
+      #     TARGET_ENVIRONMENT: ${{ github.ref_name }}
+      #     AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      #     AZURE_AKS: ${{ vars.AZURE_AKS }}
+      #     AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      #     AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      #     AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      #     AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
   gh-pages-update:
     runs-on: ubuntu-latest
