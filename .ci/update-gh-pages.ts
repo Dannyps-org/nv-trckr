@@ -46,18 +46,35 @@ async function getDetailsForEnv(env: Environment): Promise<RefDetails> {
         ref: `tags/${env}`,
     });
 
-    const tag = await octokit.rest.git.getTag({
-        owner,
-        repo,
-        tag_sha: ref.data.object.sha,
-    });
+    if (ref.data.object.type === 'tag') {
+        const tag = await octokit.rest.git.getTag({
+            owner,
+            repo,
+            tag_sha: ref.data.object.sha,
+        });
 
-    return {
-        env,
-        hash: ref.data.object.sha,
-        url: tag.data.url,
-        message: tag.data.message,
-        date: new Date(tag.data.tagger.date),
-        behindMainCommitCount: 0
-    };
+        return {
+            env,
+            hash: ref.data.object.sha,
+            url: tag.data.url,
+            message: tag.data.message,
+            date: new Date(tag.data.tagger.date),
+            behindMainCommitCount: 0
+        };
+    } else {
+        const commit = await octokit.rest.git.getCommit({
+            owner,
+            repo,
+            commit_sha: ref.data.object.sha,
+        });
+
+        return {
+            env,
+            hash: ref.data.object.sha,
+            url: commit.data.url,
+            message: commit.data.message,
+            date: new Date(commit.data.author.date),
+            behindMainCommitCount: 0
+        };
+    }
 }
