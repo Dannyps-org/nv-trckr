@@ -6,8 +6,9 @@ import { getRequiredEnvVar } from "./lib";
 
 const environments = ["dev", "stage", "prod", "bird"] as const;
 type Environment = typeof environments[number];
-
+console.log(process.cwd())
 process.chdir("gh-pages")
+console.log(process.cwd())
 
 const [_, repo] = getRequiredEnvVar("GITHUB_REPOSITORY").split("/");
 const githubToken = getRequiredEnvVar("GITHUB_TOKEN");
