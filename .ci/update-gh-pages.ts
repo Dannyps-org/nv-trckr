@@ -30,12 +30,12 @@ environments.forEach(env => {
 });
 
 let toAppend = '';
-Promise.all(results).then(res => {
+await Promise.all(results).then(res => {
     res.forEach(details => {
         toAppend += `| ${details.env} | [${details.hash}](${details.url}) | ${details.message} | ${details.date} | ${details.behindMainCommitCount} |\n`;
     });
 });
-console.log(toAppend);
+
 fs.appendFile(indexFileName, toAppend);
 
 fs.appendFile(configFileName, `description: Last updated on ${new Date().toDateString()}\n`);
