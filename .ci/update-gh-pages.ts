@@ -7,8 +7,9 @@ import { getRequiredEnvVar } from "./lib";
 const environments = ["dev", "stage", "prod", "bird"] as const;
 type Environment = typeof environments[number];
 
+$`ls`;
 $`cd gh-pages`;
-
+$`ls`;
 const [_, repo] = getRequiredEnvVar("GITHUB_REPOSITORY").split("/");
 const githubToken = getRequiredEnvVar("GITHUB_TOKEN");
 const octokit = new Octokit({ auth: githubToken });
