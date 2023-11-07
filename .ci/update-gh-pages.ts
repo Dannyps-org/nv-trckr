@@ -7,14 +7,13 @@ import { getRequiredEnvVar } from "./lib";
 const environments = ["dev", "stage", "prod", "bird"] as const;
 type Environment = typeof environments[number];
 
-$`ls -alh`;
 $`cd gh-pages`;
-$`ls -alh`;
+
 const [_, repo] = getRequiredEnvVar("GITHUB_REPOSITORY").split("/");
 const githubToken = getRequiredEnvVar("GITHUB_TOKEN");
 const octokit = new Octokit({ auth: githubToken });
 
-const configFileName = "_.config.yml";
+const configFileName = "_config.yml";
 const configStubFileName = "_config.stub.yml";
 
 const indexFileName="index.markdown";
@@ -33,7 +32,7 @@ environments.forEach(env => {
 fs.appendFile(configFileName, `description: Last updated on ${new Date().toDateString()}\n`)
 
 $`git add . && git commit -m "Update github pages"`;
-
+$`cd ..`
 function getDetailsForEnv(env: Environment): { env: Environment, hash: string, url: string, message: string, date: Date, behindMainCommitCount: number; } {
     return {
         env,
