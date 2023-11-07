@@ -6,4 +6,7 @@ Lorem ipsum dolor sit amet.
 
 | Environemnt | Hash | Message | Date | Behind Main |
 |-------------|------|---------|------|-------------|
-| dev         | [Duck Duck Go](https://duckduckgo.com) | Bump Helm Chart to v3.0.3 | 02-11-2023 | 0 |
+| dev | [xxxxxx](url) | message | Tue Nov 07 2023 11:45:54 GMT+0000 (Coordinated Universal Time) | 0 |
+| stage | [xxxxxx](url) | message | Tue Nov 07 2023 11:45:54 GMT+0000 (Coordinated Universal Time) | 0 |
+| prod | [xxxxxx](url) | message | Tue Nov 07 2023 11:45:54 GMT+0000 (Coordinated Universal Time) | 0 |
+| bird | [xxxxxx](url) | message | Tue Nov 07 2023 11:45:54 GMT+0000 (Coordinated Universal Time) | 0 |

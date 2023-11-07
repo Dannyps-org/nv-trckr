@@ -46,6 +46,5 @@ plugins:
 #   - vendor/cache/
 #   - vendor/gems/
 #   - vendor/ruby/
-
-description: All systems check.
-baseurl: "/nv-trckr" # the subpath of your site, e.g. /blog
+baseurl: /nv-trckr
+description: Last updated on Tue Nov 07 2023
